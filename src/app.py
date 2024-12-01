@@ -18,7 +18,7 @@ def main(page: ft.Page):
     page.theme = ft.Theme(color_scheme_seed=ft.colors.PURPLE_800)
 
     def open_repo(e):
-        page.launch_url('https://github.com/')
+        page.launch_url('https://github.com/Artyr717/Nexon-Launcher/releases')
 
     def add_game(e):
         dialog = AddGameDialog(page, on_game_added=add_game_to_data)
