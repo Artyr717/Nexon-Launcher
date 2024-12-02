@@ -1,5 +1,3 @@
-# dialogs.py
-
 import os
 import flet as ft
 from func import read_json_file, write_json_file
