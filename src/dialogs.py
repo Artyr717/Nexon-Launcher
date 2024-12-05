@@ -169,17 +169,20 @@ class SettingsDialog:
         # Creating the dialog content with buttons
         dialog_content = ft.Column([
             ft.Container(
-                content=ft.Row([ft.Text("Выберите тему:", size=20), *theme_buttons]),
+                content=ft.Row([ft.Text("Выберите тему:", size=20, color=ft.colors.WHITE, weight=ft.FontWeight.BOLD),
+                                *theme_buttons]),
                 padding=ft.padding.all(10),
             ),
             ft.Container(
-                content=ft.Row([ft.Text("Выберите акцентный цвет:", size=20), *color_buttons]),
+                content=ft.Row(
+                    [ft.Text("Выберите акцентный цвет:", size=20, color=ft.colors.WHITE, weight=ft.FontWeight.BOLD),
+                     *color_buttons]),
                 padding=ft.padding.all(10),
             )
         ], alignment=ft.MainAxisAlignment.START, height=150)
 
         # Setting the dialog title and content
-        title = ft.Text("Настройки", size=30, weight=ft.FontWeight.BOLD)
+        title = ft.Text("Настройки", size=30, weight=ft.FontWeight.BOLD, color=ft.colors.WHITE)
         self.dlg = ft.AlertDialog(
             title=title,
             content=dialog_content,
