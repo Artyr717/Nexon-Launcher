@@ -1,15 +1,19 @@
 import subprocess
 import flet as ft
-from dialogs import AddGameDialog, SettingsDialog
+from dialogs import AddGameDialog, SettingsDialog, UpdateDialog
 import functions.func_games as func_g
 import functions.func_settings as func_s
+import functions.func_update as func_update
 
 
-class GameManager:
+class Launcher:
     def __init__(self, page: ft.Page):
         self.page = page
         self.apply_settings()  # Apply saved theme and color on initialization
-
+        self.current_version = func_s.read_json_file().get("version", "Error")
+        if self.current_version == "Error":
+            func_s.update_json_file()
+            self.current_version = func_s.read_json_file().get("version", "Error")
         self.header = ft.Container(
             content=ft.Row([
                 ft.Text("Nexon Launcher", size=35, weight=ft.FontWeight.BOLD, text_align=ft.TextAlign.LEFT,
@@ -30,6 +34,14 @@ class GameManager:
             margin=ft.margin.symmetric(0, 15),
             padding=ft.padding.symmetric(5, 5),
         )
+
+    def check_for_updates(self):
+        latest_version, release_url, download_url = func_update.get_latest_release()
+
+        if self.current_version != latest_version:
+            update_dialog = UpdateDialog(other_page=self.page, current_version=self.current_version,
+                                         latest_version=latest_version, download_url=download_url)
+            update_dialog.create()
 
     def apply_settings(self):
         """Apply theme and color settings from the JSON file."""
