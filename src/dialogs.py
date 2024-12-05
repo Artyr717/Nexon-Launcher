@@ -1,6 +1,7 @@
 import os
 
 import flet as ft
+
 import functions.func_games as func_g
 import functions.func_settings as func_s
 
@@ -221,9 +222,65 @@ class SettingsDialog:
         self.other_page.update()
 
     def restart(self, page: ft.Page):
-        from game_manager import GameManager
+        from launcher import Launcher
         """ Function to restart the app by clearing the page and reinitializing GameManager """
         page.controls.clear()  # Clear current page controls
-        game_manager = GameManager(page)  # Reinitialize the GameManager
+        game_manager = Launcher(page)  # Reinitialize the GameManager
         game_manager.display_games()  # Re-display the games or any other content after restart
         page.update()  # Update the page with the new content
+
+
+class UpdateDialog:
+    def __init__(self, other_page, current_version, latest_version, download_url):
+        self.other_page = other_page
+        self.dlg = None
+        self.current_version = current_version
+        self.latest_version = latest_version
+        self.download_url = download_url
+        self.data = func_s.read_json_file()
+
+    def create(self):
+        update_button = ft.ElevatedButton("Обновить", icon=ft.icons.DOWNLOAD, color=ft.colors.WHITE,
+                                          icon_color=ft.colors.WHITE, bgcolor=self.other_page.theme.primary_color,
+                                          on_click=self.update)
+        close_button = ft.TextButton("Не сейчас...", on_click=self.close_message)
+
+        dialog_content = ft.Column([
+            ft.Divider(color=ft.colors.GREY_700),
+            ft.Container(
+                content=ft.Column([
+                    ft.Text(f"Ваша версия: {self.current_version}",
+                            size=20, color=ft.colors.WHITE, weight=ft.FontWeight.BOLD),
+                    ft.Text(f"Актуальная версия: {self.latest_version}",
+                            size=20, color=ft.colors.WHITE, weight=ft.FontWeight.BOLD)
+                ]),
+            ),
+        ], alignment=ft.MainAxisAlignment.START, height=100)
+
+        title = ft.Text("Доступно обновление", size=25, weight=ft.FontWeight.BOLD, color=ft.colors.WHITE,
+                        text_align=ft.TextAlign.CENTER)
+        self.dlg = ft.AlertDialog(
+            title=title,
+            content=dialog_content,
+            bgcolor=ft.colors.GREY_800,
+            actions=[close_button, update_button]
+        )
+
+        self.other_page.overlay.append(self.dlg)
+        self.dlg.open = True
+        self.other_page.update()
+
+    def update(self, e):
+        try:
+            self.other_page.launch_url(self.download_url)
+        except Exception as e:
+            print(e)
+
+        self.data["version"] = self.latest_version
+        func_s.write_json_file(self.data)
+        self.dlg.open = False
+        self.other_page.update()
+
+    def close_message(self, e):
+        self.dlg.open = False
+        self.other_page.update()
