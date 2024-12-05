@@ -2,6 +2,8 @@ import json
 import os
 from pathlib import Path
 
+from . import func_update
+
 
 # Функция для создания файла JSON
 def create_json_file():
@@ -18,10 +20,11 @@ def create_json_file():
     # Путь к файлу data.json
     json_file_path = nexon_launcher_folder / "settings.json"
 
+    latest_version, release_url, download_url = func_update.get_latest_release()
     # Создаем словарь с данными
     data = {"theme": "dark",
             "color": "PURPLE_800",
-            "version": "1.0.0"}
+            "version": latest_version}
 
     # Записываем данные в файл
     with open(json_file_path, 'w') as file:
@@ -66,9 +69,11 @@ def update_json_file():
     if not json_file_path.exists():
         create_json_file()
 
+    latest_version, release_url, download_url = func_update.get_latest_release()
+
     data = {"theme": read_json_file()["theme"],
             "color": read_json_file()["color"],
-            "version": "1.0.0"}
+            "version": latest_version}
 
     with open(json_file_path, 'w') as file:
         json.dump(data, file, indent=4)
