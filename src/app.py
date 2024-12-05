@@ -1,5 +1,5 @@
 import flet as ft
-from game_manager import GameManager
+from launcher import Launcher
 
 
 def main(page: ft.Page):
@@ -9,8 +9,9 @@ def main(page: ft.Page):
     page.window.height = 800
     page.window.resizable = False
     page.theme = ft.Theme(color_scheme_seed=ft.colors.PURPLE_800)
-    game_manager = GameManager(page)
+    game_manager = Launcher(page)
     game_manager.display_games()
+    game_manager.check_for_updates()
 
 
 ft.app(main)
