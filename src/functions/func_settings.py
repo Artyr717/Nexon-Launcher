@@ -20,7 +20,8 @@ def create_json_file():
 
     # Создаем словарь с данными
     data = {"theme": "dark",
-            "color": "PURPLE_800"}
+            "color": "PURPLE_800",
+            "version": "1.0.0"}
 
     # Записываем данные в файл
     with open(json_file_path, 'w') as file:
@@ -54,6 +55,21 @@ def write_json_file(data):
     json_file_path = documents_folder / "Nexon Launcher" / "settings.json"
 
     # Записываем данные в файл
+    with open(json_file_path, 'w') as file:
+        json.dump(data, file, indent=4)
+
+
+def update_json_file():
+    documents_folder = Path.home() / "Documents"
+    json_file_path = documents_folder / "Nexon Launcher" / "settings.json"
+
+    if not json_file_path.exists():
+        create_json_file()
+
+    data = {"theme": read_json_file()["theme"],
+            "color": read_json_file()["color"],
+            "version": "1.0.0"}
+
     with open(json_file_path, 'w') as file:
         json.dump(data, file, indent=4)
 
