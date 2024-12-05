@@ -1,6 +1,8 @@
 import os
+
 import flet as ft
-from func import read_json_file, write_json_file
+import functions.func_games as func_g
+import functions.func_settings as func_s
 
 
 class AddGameDialog:
@@ -12,7 +14,7 @@ class AddGameDialog:
         self.name_field = ft.TextField(label="Название игры", width=300)
         self.other_page = other_page
         self.dlg = None
-        self.data = read_json_file()
+        self.data = func_g.read_json_file()
         self.selected_file_path = ft.TextField(label="Путь к файлу", width=300, disabled=True)
         self.pick_file_dialog = ft.FilePicker(on_result=self.pick_files_result)
 
@@ -89,7 +91,7 @@ class AddGameDialog:
         if game_image_path:
             new_game["game_image"] = game_image_path
 
-        games_data = read_json_file()
+        games_data = func_g.read_json_file()
 
         existing_games = [game for game in games_data["games"] if game["name"] == new_game["name"]]
         if existing_games:
@@ -97,7 +99,7 @@ class AddGameDialog:
             return
 
         games_data["games"].append(new_game)
-        write_json_file(games_data)
+        func_g.write_json_file(games_data)
 
         self.dlg.open = False
         self.other_page.update()
@@ -116,3 +118,109 @@ class AddGameDialog:
         info_message = ft.Text(message, color=ft.colors.GREEN, size=18)
         self.other_page.add(ft.Container(content=info_message, padding=ft.padding.symmetric(10, 10)))
         self.other_page.update()
+
+
+class SettingsDialog:
+    def __init__(self, other_page):
+        self.other_page = other_page
+        self.dlg = None
+        self.data = func_s.read_json_file()
+
+    def create(self):
+        # Button to save settings
+        add_button = ft.TextButton(
+            text="Сохранить",
+            icon=ft.icons.SAVE,
+            on_click=self.on_click,
+            icon_color=ft.colors.WHITE,
+        )
+        to_default_button = ft.TextButton("По умолчанию",
+                                          on_click=self.on_click_default)
+
+        # Accent color options (example colors)
+        color_options = [
+            "PURPLE_800", "RED_800", "GREEN_800", "BLUE_800"
+        ]
+
+        # Creating color buttons
+        color_buttons = [
+            ft.IconButton(
+                icon=ft.icons.COLOR_LENS,
+                on_click=lambda e, color=color: self.set_color(e, color),
+                tooltip=f"Выберите {color}",
+                bgcolor=getattr(ft.colors, color),
+                icon_color=ft.colors.WHITE  # Set icon color to white
+            )
+            for color in color_options
+        ]
+
+        # Creating theme selection buttons (light and dark)
+        theme_buttons = [
+            ft.IconButton(
+                icon=ft.icons.BRIGHTNESS_7 if theme == "light" else ft.icons.BRIGHTNESS_3,
+                on_click=lambda e, theme=theme: self.set_theme(e, theme),
+                tooltip=f"Выберите тему {theme.capitalize()}",
+                bgcolor=ft.colors.AMBER_800 if theme == "light" else ft.colors.GREY_700,
+                icon_color=ft.colors.WHITE  # Set icon color to white
+            )
+            for theme in ["light", "dark"]
+        ]
+
+        # Creating the dialog content with buttons
+        dialog_content = ft.Column([
+            ft.Container(
+                content=ft.Row([ft.Text("Выберите тему:", size=20), *theme_buttons]),
+                padding=ft.padding.all(10),
+            ),
+            ft.Container(
+                content=ft.Row([ft.Text("Выберите акцентный цвет:", size=20), *color_buttons]),
+                padding=ft.padding.all(10),
+            )
+        ], alignment=ft.MainAxisAlignment.START, height=150)
+
+        # Setting the dialog title and content
+        title = ft.Text("Настройки", size=30, weight=ft.FontWeight.BOLD)
+        self.dlg = ft.AlertDialog(
+            title=title,
+            content=dialog_content,
+            bgcolor=ft.colors.GREY_800,
+            actions=[to_default_button, add_button]  # Add the save button to the dialog actions
+        )
+
+        # Adding the dialog to the overlay and opening it
+        self.other_page.overlay.append(self.dlg)
+        self.dlg.open = True
+        self.other_page.update()
+
+    def set_color(self, e, color):
+        """ Set the accent color """
+        self.data['color'] = color
+        self.other_page.update()
+
+    def set_theme(self, e, theme):
+        """ Set the theme (light or dark) """
+        self.data['theme'] = theme
+        self.other_page.update()
+
+    def on_click(self, e):
+        """ Save settings and restart the app """
+        func_s.write_json_file(self.data)
+        self.restart(self.other_page)
+        self.dlg.open = False
+        self.other_page.update()
+
+    def on_click_default(self, e):
+        self.data['theme'] = "dark"
+        self.data['color'] = "PURPLE_800"
+        func_s.write_json_file(self.data)
+        self.restart(self.other_page)
+        self.dlg.open = False
+        self.other_page.update()
+
+    def restart(self, page: ft.Page):
+        from game_manager import GameManager
+        """ Function to restart the app by clearing the page and reinitializing GameManager """
+        page.controls.clear()  # Clear current page controls
+        game_manager = GameManager(page)  # Reinitialize the GameManager
+        game_manager.display_games()  # Re-display the games or any other content after restart
+        page.update()  # Update the page with the new content
